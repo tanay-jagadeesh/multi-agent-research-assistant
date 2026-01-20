@@ -1,0 +1,15 @@
+2026-01-20 18:03:01,572 - INFO - Note: NumExpr detected 12 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 8.
+2026-01-20 18:03:01,572 - INFO - NumExpr defaulting to 8 threads.
+2026-01-20 18:03:03,916 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 18:03:03,923 - INFO - Web search called with query: latest tech news headlines
+2026-01-20 18:03:04,081 - INFO - Error in engine grokipedia: DDGSException("RuntimeError: RuntimeError('error sending request for url (https://wt.wikipedia.org/w/api.php?action=opensearch&profile=fuzzy&limit=1&search=latest%20tech%20news%20headlines): client error (Connect)\\n\\nCaused by:\\n    0: client error (Connect)\\n    1: dns error: failed to lookup address information: nodename nor servname provided, or not known\\n    2: failed to lookup address information: nodename nor servname provided, or not known')")
+2026-01-20 18:03:04,160 - INFO - response: https://grokipedia.com/api/typeahead?query=latest+tech+news+headlines&limit=1 200
+2026-01-20 18:03:05,191 - INFO - response: https://yandex.com/search/site/?text=latest+tech+news+headlines&web=1&searchid=8941573 200
+2026-01-20 18:03:05,228 - INFO - Web search completed successfully
+2026-01-20 18:03:06,972 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+I found some of the latest tech news headlines for you:
+
+1. "iPhone 18 Pro Leaks: Under-Display Face ID and Advanced Camera Tech Tipped" - This news was reported 1 hour ago.
+2. "OnePlus Facing Challenges with a Reported 20% Year-on-Year Drop in Global Shipments in 2024" - Evidence suggests that OnePlus may be facing difficulties.
+
+For more detailed information, you can visit the respective news sources.
