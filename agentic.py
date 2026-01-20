@@ -26,6 +26,21 @@ def fetch_webpage(url: str) -> str:
     text = soup.get_text()[:5000]
     return text
 
+@tool
+def summarize(text:str) -> str:
+    """Summarizes text in longer formats such as articles"""
+    prompt = f"Summarize this text {text}"
+
+    llm = ChatOpenAI(temperature = 0, model = "gpt-3.5-turbo")
+    result = llm.invoke(prompt)
+    return result
+
+@tool
+def file_saver(text:str) -> str:
+    """Saves text from summarize function to a file"""
+    with open("info.txt", "w") as f:
+       result = f.write(text)
+    return "File Saved Successfully"
 
 # Create memory for the agent
 memory = MemorySaver()
@@ -35,7 +50,7 @@ prompt = "What are the latest tech news headlines today?"
 llm = ChatOpenAI(temperature=0, model='gpt-3.5-turbo')
 
 tools = load_tools(['wikipedia', "llm-math"], llm=llm)
-tools.extend([web_search, fetch_webpage])
+tools.extend([web_search, fetch_webpage, summarize])
 
 # Create agent with memory using checkpointer parameter
 agent = create_agent(llm, tools, checkpointer=memory, debug=False)
