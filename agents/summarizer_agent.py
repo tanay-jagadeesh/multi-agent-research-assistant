@@ -1,16 +1,16 @@
-from tools import web_search
+from tools import summarize, fetch_webpage
 from langchain.agents import create_agent
 from config import get_llm, get_memory
 
-def create_searcher_agent(debug=False):
+def create_summarizer_agent(debug=False):
     """
-    Create a searcher agent that finds 3-5 relevant URLs for a topic.
+    Create a summarizer agent that fetches the url and summarizes the contents.
     """
     
     llm = get_llm()
     memory = get_memory()
 
-    tools = [web_search]
+    tools = [fetch_webpage, summarize]
 
     agent = create_agent(llm, tools, checkpointer=memory, debug=debug)
 
