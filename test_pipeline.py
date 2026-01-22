@@ -1,9 +1,12 @@
 from agents.planner_agent import create_planner_agent
 from agents.research_agent import create_research_agent
+from config import setup_logging
+
+setup_logging()
 
 planner_agent, planner_memory = create_planner_agent()
 
-research_agent, research_agent = create_research_agent()
+researcher_agent, researcher_memory = create_research_agent()
 
 question = "What is the future of Aritificial Intelligence in Healthcare?"
 
