@@ -10,7 +10,7 @@ def create_analyst_agent(debug = False):
 
     tools = []
 
-    agent = create_agent(llm = llm, checkpointer= memory, debug = debug, system_prompt = """You are an expert research analyst. Your role is to synthesize research findings into comprehensive, well-structured reports.
+    agent = create_agent(llm, tools, checkpointer=memory, debug=debug, system_prompt="""You are an expert research analyst. Your role is to synthesize research findings into comprehensive, well-structured reports.
 
 You will receive research findings in this format:
 Question 1: [question]
