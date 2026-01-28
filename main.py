@@ -39,6 +39,8 @@ def run_research(query: str, thread_id: str = "workflow-1"):
 
 def main():
     """Main function to run the research assistant."""
+    from utils.logging_system import performance_tracker
+
     setup_logging()
 
     prompt = "What is the future of Artificial Intelligence in Healthcare?"
@@ -51,6 +53,8 @@ def main():
     print("FINAL REPORT:")
     print("="*50)
     print(result)
+
+    performance_tracker.print_dashboard()
 
 
 if __name__ == "__main__":

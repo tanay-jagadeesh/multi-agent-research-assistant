@@ -12,7 +12,9 @@ from config import get_memory
 def planner_node(state: ResearchState) -> ResearchState:
     """Planner agent node: breaks down user query into sub-questions."""
     from utils.error_handling import safe_agent_invoke, validate_state_field, retry_on_failure
+    from utils.logging_system import log_agent_action
 
+    @log_agent_action("Planner")
     @retry_on_failure(max_retries=3)
     def invoke_planner():
         planner_agent, _ = create_planner_agent()
@@ -37,7 +39,9 @@ def planner_node(state: ResearchState) -> ResearchState:
 def researcher_node(state: ResearchState) -> ResearchState:
     """Research agent node: gathers findings for each sub-question."""
     from utils.error_handling import safe_agent_invoke, validate_state_field, retry_on_failure
+    from utils.logging_system import log_agent_action
 
+    @log_agent_action("Researcher")
     @retry_on_failure(max_retries=3)
     def invoke_researcher():
         researcher_agent, _ = create_research_agent()
