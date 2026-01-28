@@ -3,6 +3,7 @@ from state import ResearchState
 from agents.planner_agent import create_planner_agent
 from agents.research_agent import create_research_agent
 from agents.fact_checker_agent import create_fact_checker_agent
+from agents.citation_agent import create_citation_agent
 from agents.analyst_agent import create_analyst_agent
 from config import get_memory
 
@@ -46,13 +47,26 @@ def fact_checker_node(state: ResearchState) -> ResearchState:
     return {"fact_check": fact_check}
 
 
+def citation_node(state: ResearchState) -> ResearchState:
+    """Citation agent node: formats citations and bibliography."""
+    citation_agent, _ = create_citation_agent()
+
+    config = {"configurable": {"thread_id": "citation-1"}}
+    inputs = {"messages": [{"role": "user", "content": state["findings"]}]}
+
+    result = citation_agent.invoke(inputs, config)
+    citations = result['messages'][-1].content
+
+    return {"citations": citations}
+
+
 def analyst_node(state: ResearchState) -> ResearchState:
     """Analyst agent node: synthesizes findings into final report."""
     analyst_agent, _ = create_analyst_agent()
 
     config = {"configurable": {"thread_id": "analyst-1"}}
 
-    combined_input = f"Research Findings:\n{state['findings']}\n\nFact-Check Results:\n{state['fact_check']}"
+    combined_input = f"Research Findings:\n{state['findings']}\n\nFact-Check Results:\n{state['fact_check']}\n\nCitations:\n{state['citations']}"
     inputs = {"messages": [{"role": "user", "content": combined_input}]}
 
     result = analyst_agent.invoke(inputs, config)
@@ -68,12 +82,14 @@ def create_workflow():
     workflow.add_node("planner", planner_node)
     workflow.add_node("researcher", researcher_node)
     workflow.add_node("fact_checker", fact_checker_node)
+    workflow.add_node("citation", citation_node)
     workflow.add_node("analyst", analyst_node)
 
     workflow.set_entry_point("planner")
     workflow.add_edge("planner", "researcher")
     workflow.add_edge("researcher", "fact_checker")
-    workflow.add_edge("fact_checker", "analyst")
+    workflow.add_edge("fact_checker", "citation")
+    workflow.add_edge("citation", "analyst")
     workflow.add_edge("analyst", END)
 
     memory = get_memory()

@@ -23,6 +23,7 @@ def run_research(query: str, thread_id: str = "workflow-1"):
         "research_plan": None,
         "findings": None,
         "fact_check": None,
+        "citations": None,
         "final_report": None
     }
 
