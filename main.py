@@ -24,7 +24,9 @@ def run_research(query: str, thread_id: str = "workflow-1"):
         "findings": None,
         "fact_check": None,
         "citations": None,
-        "final_report": None
+        "final_report": None,
+        "quality_check": None,
+        "revision_count": 0
     }
 
     config = {"configurable": {"thread_id": thread_id}}

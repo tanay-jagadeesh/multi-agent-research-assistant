@@ -10,6 +10,8 @@ class ResearchState(TypedDict):
     fact_check: Fact-check results from fact checker agent
     citations: Formatted citations and bibliography from citation agent
     final_report: Synthesized analysis from analyst agent
+    quality_check: Quality evaluation and score from QC agent
+    revision_count: Number of times report has been revised
     """
     user_query: str
     research_plan: Optional[str]
@@ -17,3 +19,5 @@ class ResearchState(TypedDict):
     fact_check: Optional[str]
     citations: Optional[str]
     final_report: Optional[str]
+    quality_check: Optional[str]
+    revision_count: int
