@@ -2,6 +2,7 @@ from langgraph.graph import StateGraph, END
 from state import ResearchState
 from agents.planner_agent import create_planner_agent
 from agents.research_agent import create_research_agent
+from agents.fact_checker_agent import create_fact_checker_agent
 from agents.analyst_agent import create_analyst_agent
 from config import get_memory
 
@@ -32,12 +33,27 @@ def researcher_node(state: ResearchState) -> ResearchState:
     return {"findings": findings}
 
 
+def fact_checker_node(state: ResearchState) -> ResearchState:
+    """Fact-checker agent node: verifies claims in research findings."""
+    fact_checker_agent, _ = create_fact_checker_agent()
+
+    config = {"configurable": {"thread_id": "fact-checker-1"}}
+    inputs = {"messages": [{"role": "user", "content": state["findings"]}]}
+
+    result = fact_checker_agent.invoke(inputs, config)
+    fact_check = result['messages'][-1].content
+
+    return {"fact_check": fact_check}
+
+
 def analyst_node(state: ResearchState) -> ResearchState:
     """Analyst agent node: synthesizes findings into final report."""
     analyst_agent, _ = create_analyst_agent()
 
     config = {"configurable": {"thread_id": "analyst-1"}}
-    inputs = {"messages": [{"role": "user", "content": state["findings"]}]}
+
+    combined_input = f"Research Findings:\n{state['findings']}\n\nFact-Check Results:\n{state['fact_check']}"
+    inputs = {"messages": [{"role": "user", "content": combined_input}]}
 
     result = analyst_agent.invoke(inputs, config)
     final_report = result['messages'][-1].content
@@ -51,11 +67,13 @@ def create_workflow():
 
     workflow.add_node("planner", planner_node)
     workflow.add_node("researcher", researcher_node)
+    workflow.add_node("fact_checker", fact_checker_node)
     workflow.add_node("analyst", analyst_node)
 
     workflow.set_entry_point("planner")
     workflow.add_edge("planner", "researcher")
-    workflow.add_edge("researcher", "analyst")
+    workflow.add_edge("researcher", "fact_checker")
+    workflow.add_edge("fact_checker", "analyst")
     workflow.add_edge("analyst", END)
 
     memory = get_memory()

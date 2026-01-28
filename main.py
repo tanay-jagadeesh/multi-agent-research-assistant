@@ -2,47 +2,52 @@
 Main entry point for the research assistant.
 """
 from config import setup_logging
-from agents import create_research_agent
+from workflow import create_workflow
 
-def run_research(query: str, thread_id: str = "conversation-1", debug: bool = False):
+
+def run_research(query: str, thread_id: str = "workflow-1"):
     """
-    Run a research query through the agent.
+    Run a research query through the complete workflow.
 
     Args:
-        query: The research question or task
-        thread_id: Conversation thread ID for memory persistence
-        debug: Enable debug mode
+        query: The research question
+        thread_id: Workflow thread ID for memory persistence
 
     Returns:
-        Agent response
+        Final report from analyst agent
     """
-    agent, memory = create_research_agent(debug=debug)
+    workflow = create_workflow()
+
+    initial_state = {
+        "user_query": query,
+        "research_plan": None,
+        "findings": None,
+        "fact_check": None,
+        "final_report": None
+    }
 
     config = {"configurable": {"thread_id": thread_id}}
-    inputs = {"messages": [{"role": "user", "content": query}]}
 
-    result = agent.invoke(inputs, config)
-    final_message = result['messages'][-1]
+    result = workflow.invoke(initial_state, config)
 
-    return final_message.content
+    return result["final_report"]
+
 
 def main():
     """Main function to run the research assistant."""
-    # Setup logging
     setup_logging()
 
-    # Example query
-    prompt = "What are the latest tech news headlines today?"
+    prompt = "What is the future of Artificial Intelligence in Healthcare?"
 
     print("Research Assistant Starting...")
     print(f"Query: {prompt}\n")
 
-    result = run_research(prompt, debug=False)
+    result = run_research(prompt)
 
-    print("\n" + "="*50)
-    print("RESULT:")
+    print("FINAL REPORT:")
     print("="*50)
     print(result)
+
 
 if __name__ == "__main__":
     main()
