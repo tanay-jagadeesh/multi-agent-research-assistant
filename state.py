@@ -12,6 +12,7 @@ class ResearchState(TypedDict):
     final_report: Synthesized analysis from analyst agent
     quality_check: Quality evaluation and score from QC agent
     revision_count: Number of times report has been revised
+    shared_context: Shared memory accessible by all agents for cross-agent communication
     """
     user_query: str
     research_plan: Optional[str]
@@ -21,3 +22,4 @@ class ResearchState(TypedDict):
     final_report: Optional[str]
     quality_check: Optional[str]
     revision_count: int
+    shared_context: Optional[str]
