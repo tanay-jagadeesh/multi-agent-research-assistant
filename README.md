@@ -1,94 +1,249 @@
+<div align="center">
+
 # Multi-Agent Research Assistant
 
-A multi-agent research system built with LangChain and LangGraph.
+### Autonomous research powered by a coordinated team of AI agents
+
+[![Python 3.12](https://img.shields.io/badge/Python-3.12-blue.svg)](https://www.python.org/downloads/)
+[![LangGraph](https://img.shields.io/badge/LangGraph-1.0-green.svg)](https://github.com/langchain-ai/langgraph)
+[![LangChain](https://img.shields.io/badge/LangChain-1.2-orange.svg)](https://github.com/langchain-ai/langchain)
+[![Streamlit](https://img.shields.io/badge/Streamlit-UI-red.svg)](https://streamlit.io/)
+
+*Ask a complex question. Get a verified, cited, quality-checked research report.*
+
+</div>
+
+---
+
+## The Problem
+
+Research is time-consuming. You ask a question, open a dozen tabs, cross-reference sources, verify claims, organize findings, and write it all up. What if a team of specialized AI agents could do that for you — and check each other's work?
+
+## The Solution
+
+This system orchestrates **6 specialized agents** through a stateful pipeline that mirrors how a real research team operates:
+
+```
+Question → Plan → Research → Verify → Cite → Analyze → QC → Report
+```
+
+Each agent has a defined role, and the pipeline includes a **quality feedback loop** — if the report doesn't meet standards, it gets sent back for revision automatically.
+
+---
+
+## Architecture
+
+```
+                          ┌─────────────┐
+                          │   Planner   │  Breaks query into 3-5
+                          │    Agent    │  focused sub-questions
+                          └──────┬──────┘
+                                 │
+                          ┌──────▼──────┐
+                          │  Research   │  Web search + page scraping
+                          │    Agent    │  for each sub-question
+                          └──────┬──────┘
+                                 │
+                          ┌──────▼──────┐
+                          │ Fact-Check  │  Verifies key claims with
+                          │    Agent    │  independent source checks
+                          └──────┬──────┘
+                                 │
+                          ┌──────▼──────┐
+                          │  Citation   │  Extracts & formats sources
+                          │    Agent    │  into proper bibliography
+                          └──────┬──────┘
+                                 │
+                          ┌──────▼──────┐
+                          │   Analyst   │  Synthesizes everything into
+                          │    Agent    │  a structured report
+                          └──────┬──────┘
+                                 │
+                          ┌──────▼──────┐
+                     ┌───►│  Quality    │  Scores on 5 criteria
+                     │    │  Control    │  (100-point rubric)
+                     │    └──────┬──────┘
+                     │           │
+                     │     ┌─────▼─────┐
+                     │     │  Score     │
+                     │     │  ≥ 70?    │
+                     │     └─────┬─────┘
+                     │      No   │   Yes
+                     └───────────┘    │
+                                 ┌────▼────┐
+                                 │  Final  │
+                                 │ Report  │
+                                 └─────────┘
+```
+
+Built with **LangGraph's StateGraph** for deterministic orchestration and shared state across all agents.
+
+---
+
+## Agents
+
+| Agent | Role | Tools | Output |
+|-------|------|-------|--------|
+| **Planner** | Decomposes complex questions into focused sub-questions | — | 3-5 research sub-questions |
+| **Researcher** | Gathers evidence from the web | `web_search`, `fetch_webpage` | Structured findings per sub-question |
+| **Fact-Checker** | Independently verifies key claims | `web_search` | Verified / Partially Verified / Unverified / False |
+| **Citation** | Extracts and formats all sources | — | Numbered bibliography with inline refs |
+| **Analyst** | Synthesizes findings into a report | — | Executive summary, analysis, insights, conclusions |
+| **Quality Control** | Evaluates report against a scoring rubric | — | Score (0-100) + actionable feedback |
+
+### Quality Scoring Rubric
+
+| Criteria | Weight |
+|----------|--------|
+| Structure & Organization | 25 |
+| Evidence & Support | 25 |
+| Accuracy & Reliability | 25 |
+| Comprehensiveness | 15 |
+| Clarity & Readability | 10 |
+
+Reports scoring below **70** are automatically sent back to the Analyst with specific feedback (up to 2 revision cycles).
+
+---
+
+## Features
+
+- **End-to-end automation** — from question to polished report with citations
+- **Fact verification** — claims are independently checked, not just repeated
+- **Quality feedback loop** — reports are scored and revised until they pass
+- **Inter-agent communication** — agents share context through a message bus
+- **Resilient execution** — automatic retries, graceful fallbacks, error recovery
+- **Performance tracking** — execution time, token usage, and cost estimates per agent
+- **Dual interfaces** — CLI for scripts, Streamlit for interactive use
+- **Persistent memory** — conversation state saved across sessions via LangGraph checkpointing
+
+---
+
+## Quick Start
+
+### Prerequisites
+
+- Python 3.12+
+- OpenAI API key
+
+### Installation
+
+```bash
+git clone https://github.com/yourusername/multi-agent-research-assistant.git
+cd multi-agent-research-assistant
+
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+
+pip install -r requirements.txt
+```
+
+### Configuration
+
+Create a `.env` file in the project root:
+
+```
+OPENAI_API_KEY=your_api_key_here
+```
+
+### Run
+
+**CLI:**
+```bash
+python main.py
+```
+
+**Web UI:**
+```bash
+streamlit run app.py
+```
+
+---
 
 ## Project Structure
 
 ```
 multi-agent-research-assistant/
-├── agents/                 # Agent definitions
-│   ├── __init__.py
-│   └── research_agent.py   # Single research agent (Week 1)
-├── config/                 # Configuration and settings
-│   ├── __init__.py
-│   └── settings.py         # Logging, LLM, and memory setup
-├── tools/                  # Custom tools
-│   ├── __init__.py
-│   ├── web_search.py       # DuckDuckGo search
-│   ├── url_fetcher.py      # Webpage content fetcher
-│   ├── summarizer.py       # Text summarization
-│   └── file_saver.py       # Save results to file
-├── output/                 # Generated output files
-├── main.py                 # Main entry point
-├── agentic.py             # Original single-file version (deprecated)
-├── .env                    # Environment variables
-└── README.md
+├── agents/
+│   ├── planner_agent.py          # Query decomposition
+│   ├── research_agent.py         # Web research & evidence gathering
+│   ├── fact_checker_agent.py     # Independent claim verification
+│   ├── citation_agent.py         # Source formatting & bibliography
+│   ├── analyst_agent.py          # Report synthesis
+│   ├── quality_control_agent.py  # Scoring & feedback
+│   └── communication.py          # Inter-agent message bus
+├── tools/
+│   ├── web_search.py             # DuckDuckGo search integration
+│   ├── url_fetcher.py            # Webpage content extraction
+│   ├── summarizer.py             # LLM-powered summarization
+│   └── file_saver.py             # Output persistence
+├── config/
+│   └── settings.py               # LLM, memory, and logging config
+├── utils/
+│   ├── error_handling.py         # Retry logic & safe invocation
+│   └── logging_system.py         # Performance tracking & metrics
+├── state.py                      # Shared ResearchState definition
+├── workflow.py                   # LangGraph StateGraph orchestration
+├── main.py                       # CLI entry point
+├── app.py                        # Streamlit web interface
+└── requirements.txt
 ```
 
-## Setup
+---
 
-1. Create virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
+## How It Works
 
-2. Install dependencies:
-```bash
-pip install langchain langchain-openai langchain-community langgraph python-dotenv requests beautifulsoup4 duckduckgo-search
-```
-
-3. Create `.env` file:
-```
-OPENAI_API_KEY=your_api_key_here
-```
-
-## Usage
-
-Run the research assistant:
-```bash
-python main.py
-```
-
-Or import and use in your own code:
 ```python
-from config import setup_logging
-from agents import create_research_agent
+# The entire pipeline in 4 lines
+from workflow import create_research_workflow
 
-setup_logging()
-agent, memory = create_research_agent(debug=True)
-
-config = {"configurable": {"thread_id": "my-session"}}
-inputs = {"messages": [{"role": "user", "content": "Your query here"}]}
-result = agent.invoke(inputs, config)
+workflow = create_research_workflow()
+result = workflow.invoke({"user_query": "What is the future of AI in healthcare?"})
+print(result["final_report"])
 ```
 
-## Available Tools
+The system will:
+1. Break the question into sub-questions
+2. Search the web and scrape relevant pages
+3. Verify key claims against independent sources
+4. Format a proper bibliography
+5. Write a structured report with executive summary, analysis, and conclusions
+6. Score the report — revise if needed
+7. Return the final, quality-checked report
 
-- **Wikipedia**: Look up factual information
-- **LLM-Math**: Perform mathematical calculations
-- **Web Search**: Search current web information via DuckDuckGo
-- **Fetch Webpage**: Extract text content from URLs
-- **Summarize**: Summarize long text content
-- **File Saver**: Save results to files in the output/ directory
+---
 
-## Next Steps (Week 2+)
+## Tech Stack
 
-When you're ready to add multi-agent capabilities:
+| Layer | Technology |
+|-------|-----------|
+| Orchestration | LangGraph (StateGraph) |
+| Agent Framework | LangChain |
+| LLM | OpenAI GPT-3.5-turbo |
+| Web Search | DuckDuckGo |
+| Web Scraping | BeautifulSoup4 |
+| State Persistence | LangGraph MemorySaver |
+| Web UI | Streamlit |
+| Error Handling | Custom retry decorators + tenacity |
 
-1. Add new agents to `agents/` directory:
-   - `planner_agent.py` - Breaks down complex questions
-   - `searcher_agent.py` - Specialized web searching
-   - `analyst_agent.py` - Synthesizes findings
+---
 
-2. Create state management in new `state/` directory
+## Experimental
 
-3. Build orchestration logic to coordinate agents
+The repo also includes experimental multi-perspective agents (not in the main pipeline):
 
-## Development
+- **Debate Agents** — Pro/Con/Judge framework for adversarial analysis
+- **Voting Agents** — Parallel researchers with consensus aggregation
 
-The refactored structure makes it easy to:
-- Add new tools in `tools/` directory
-- Add new agents in `agents/` directory
-- Modify configuration in `config/`
-- Keep main logic clean and organized
+---
+
+## License
+
+MIT
+
+---
+
+<div align="center">
+
+Built with LangChain + LangGraph
+
+</div>
