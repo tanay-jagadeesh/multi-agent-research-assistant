@@ -8,11 +8,26 @@ from agents.analyst_agent import create_analyst_agent
 from agents.quality_control_agent import create_quality_control_agent
 from config import get_memory
 
+# Optional progress queue — set by the Streamlit app before invoking the workflow
+_progress_queue = None
+
+def set_progress_queue(q):
+    global _progress_queue
+    _progress_queue = q
+
+def _emit(agent_name: str, status: str, elapsed: float = 0.0):
+    if _progress_queue is not None:
+        _progress_queue.put({"agent": agent_name, "status": status, "elapsed": elapsed})
+
 
 def planner_node(state: ResearchState) -> ResearchState:
     """Planner agent node: breaks down user query into sub-questions."""
+    import time
     from utils.error_handling import safe_agent_invoke, validate_state_field, retry_on_failure
     from utils.logging_system import log_agent_action
+
+    _emit("Planner", "running")
+    t0 = time.time()
 
     @log_agent_action("Planner")
     @retry_on_failure(max_retries=3)
@@ -31,15 +46,21 @@ def planner_node(state: ResearchState) -> ResearchState:
 
     try:
         research_plan = invoke_planner()
+        _emit("Planner", "done", time.time() - t0)
         return {"research_plan": research_plan}
     except Exception as e:
+        _emit("Planner", "error", time.time() - t0)
         return {"research_plan": f"Error in planning: {str(e)}. Using single question approach: {state.get('user_query', '')}"}
 
 
 def researcher_node(state: ResearchState) -> ResearchState:
     """Research agent node: gathers findings for each sub-question."""
+    import time
     from utils.error_handling import safe_agent_invoke, validate_state_field, retry_on_failure
     from utils.logging_system import log_agent_action
+
+    _emit("Researcher", "running")
+    t0 = time.time()
 
     @log_agent_action("Researcher")
     @retry_on_failure(max_retries=3)
@@ -58,43 +79,56 @@ def researcher_node(state: ResearchState) -> ResearchState:
 
     try:
         findings = invoke_researcher()
+        _emit("Researcher", "done", time.time() - t0)
         return {"findings": findings}
     except Exception as e:
+        _emit("Researcher", "error", time.time() - t0)
         return {"findings": f"Error in research: {str(e)}. Using fallback data."}
 
 
 def fact_checker_node(state: ResearchState) -> ResearchState:
     """Fact-checker agent node: verifies claims in research findings."""
-    fact_checker_agent, _ = create_fact_checker_agent()
+    import time
+    _emit("Fact-Checker", "running")
+    t0 = time.time()
 
+    fact_checker_agent, _ = create_fact_checker_agent()
     config = {"configurable": {"thread_id": "fact-checker-1"}}
     inputs = {"messages": [{"role": "user", "content": state["findings"]}]}
 
     result = fact_checker_agent.invoke(inputs, config)
     fact_check = result['messages'][-1].content
 
+    _emit("Fact-Checker", "done", time.time() - t0)
     return {"fact_check": fact_check}
 
 
 def citation_node(state: ResearchState) -> ResearchState:
     """Citation agent node: formats citations and bibliography."""
-    citation_agent, _ = create_citation_agent()
+    import time
+    _emit("Citation", "running")
+    t0 = time.time()
 
+    citation_agent, _ = create_citation_agent()
     config = {"configurable": {"thread_id": "citation-1"}}
     inputs = {"messages": [{"role": "user", "content": state["findings"]}]}
 
     result = citation_agent.invoke(inputs, config)
     citations = result['messages'][-1].content
 
+    _emit("Citation", "done", time.time() - t0)
     return {"citations": citations}
 
 
 def analyst_node(state: ResearchState) -> ResearchState:
     """Analyst agent node: synthesizes findings into final report."""
+    import time
     from agents.communication import add_agent_message
 
-    analyst_agent, _ = create_analyst_agent()
+    _emit("Analyst", "running")
+    t0 = time.time()
 
+    analyst_agent, _ = create_analyst_agent()
     config = {"configurable": {"thread_id": "analyst-1"}}
 
     combined_input = f"Research Findings:\n{state['findings']}\n\nFact-Check Results:\n{state['fact_check']}\n\nCitations:\n{state['citations']}"
@@ -113,14 +147,18 @@ def analyst_node(state: ResearchState) -> ResearchState:
 
     updated_context = add_agent_message(state, "Analyst", "Completed report synthesis")
 
+    _emit("Analyst", "done", time.time() - t0)
     revision_count = state.get("revision_count", 0)
     return {"final_report": final_report, "revision_count": revision_count + 1, "shared_context": updated_context}
 
 
 def quality_control_node(state: ResearchState) -> ResearchState:
     """Quality control agent node: evaluates report quality."""
-    qc_agent, _ = create_quality_control_agent()
+    import time
+    _emit("Quality Control", "running")
+    t0 = time.time()
 
+    qc_agent, _ = create_quality_control_agent()
     config = {"configurable": {"thread_id": "qc-1"}}
 
     combined_input = f"Final Report:\n{state['final_report']}\n\nFact-Check Results:\n{state['fact_check']}\n\nCitations:\n{state['citations']}"
@@ -129,6 +167,7 @@ def quality_control_node(state: ResearchState) -> ResearchState:
     result = qc_agent.invoke(inputs, config)
     quality_check = result['messages'][-1].content
 
+    _emit("Quality Control", "done", time.time() - t0)
     return {"quality_check": quality_check}
 
 

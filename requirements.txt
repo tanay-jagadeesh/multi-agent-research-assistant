@@ -39,3 +39,13 @@ urllib3==2.6.3
 uuid_utils==0.13.0
 xxhash==3.6.0
 zstandard==0.25.0
+fpdf2==2.8.7
+postgrest==2.30.0
+realtime==2.30.0
+storage3==2.30.0
+supabase==2.30.0
+supabase-auth==2.30.0
+supabase-functions==2.30.0
+fastapi==0.136.1
+starlette==1.0.0
+uvicorn==0.47.0
