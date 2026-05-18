@@ -49,3 +49,6 @@ supabase-functions==2.30.0
 fastapi==0.136.1
 starlette==1.0.0
 uvicorn==0.47.0
+ddgs==9.14.3
+lxml==6.1.0
+primp==1.2.3
