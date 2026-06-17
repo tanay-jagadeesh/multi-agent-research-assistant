@@ -1,3 +1,4 @@
+import os
 import logging
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
@@ -5,6 +6,10 @@ from langgraph.checkpoint.memory import MemorySaver
 
 # Load environment variables
 load_dotenv()
+
+# Search provider configuration
+SEARCH_PROVIDER = os.getenv("SEARCH_PROVIDER", "duckduckgo")
+TAVILY_API_KEY = os.getenv("TAVILY_API_KEY", "")
 
 def setup_logging():
     """Configure logging for the application"""
