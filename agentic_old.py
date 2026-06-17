@@ -5,11 +5,14 @@ from langchain_community.agent_toolkits.load_tools import load_tools
 from langgraph.checkpoint.memory import MemorySaver
 from langchain.tools import tool
 from langchain_community.tools import DuckDuckGoSearchRun
+import os
 import requests
 from bs4 import BeautifulSoup
 import logging
 
 load_dotenv()
+
+SEARCH_PROVIDER = os.getenv("SEARCH_PROVIDER", "duckduckgo")
 
 logging.basicConfig(
     level=logging.INFO, 
@@ -20,8 +23,16 @@ logging.basicConfig(
 def web_search(query: str) -> str:
     """Useful for searching the web for current information or recent events"""
     logging.info(f"Web search called with query: {query}")
-    search = DuckDuckGoSearchRun()
-    results = search.run(query)
+    if SEARCH_PROVIDER == "tavily":
+        from tavily import TavilyClient
+        client = TavilyClient()
+        response = client.search(query=query, max_results=5)
+        results = "\n\n".join(
+            f"{r['title']}: {r['content']}" for r in response["results"]
+        )
+    else:
+        search = DuckDuckGoSearchRun()
+        results = search.run(query)
     logging.info("Web search completed successfully")
     return results
 
