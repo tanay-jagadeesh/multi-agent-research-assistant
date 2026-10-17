@@ -145,6 +145,23 @@ Create a `.env` file in the project root:
 OPENAI_API_KEY=your_api_key_here
 ```
 
+DuckDuckGo remains the default search provider. To use free, keyless
+[Parallel Search MCP](https://docs.parallel.ai/integrations/mcp/search-mcp)
+for the Researcher and Fact-Checker, add this to your `.env` or environment:
+
+```dotenv
+SEARCH_PROVIDER=parallel
+```
+
+Parallel search uses Fast mode and returns excerpts with source URLs for cited
+findings. No Parallel account or API key is needed for light use; the anonymous
+service has usage limits. The existing `fetch_webpage` tool still reads pages
+directly. Set `SEARCH_PROVIDER=duckduckgo` to explicitly select DuckDuckGo, or
+`SEARCH_PROVIDER=none` to prevent the search tool from making network requests.
+Exported environment values take precedence over `.env`. Invalid providers and
+provider errors are surfaced without switching to a different service. Parallel
+requests have a 30-second deadline; async agent calls support cancellation.
+
 ### Run
 
 **CLI:**
